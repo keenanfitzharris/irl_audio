@@ -19,16 +19,36 @@ find_package(catkin REQUIRED COMPONENTS
 ## See http://ros.org/doc/api/catkin/html/user_guide/setup_dot_py.html
 # catkin_python_setup()
 
-# The ManyEars library can be found on SourceForge, and will be built internally
+# The ManyEars library can be found on Github, and will be built internally
 # to this package as an external project.
 include(ExternalProject)
 externalproject_add(
     manyearslib
-    SVN_REPOSITORY     http://svn.code.sf.net/p/manyears/code/trunk/manyears-C
-    BUILD_COMMAND      make
+    GIT_REPOSITORY	https://github.com/introlab/manyears.git
+    GIT_TAG		master
+    CONFIGURE_COMMAND	""
+    BUILD_COMMAND	""
+    INSTALL_COMMAND	""
+    UPDATE_COMMAND      ""
 )
+
 set(manyearslib_PREFIX
     ${CMAKE_CURRENT_BINARY_DIR}/manyearslib-prefix/src/manyearslib)
+
+externalproject_add(
+    manyears_C
+    DOWNLOAD_COMMAND    ""
+    SOURCE_DIR		${manyearslib_PREFIX}/manyears-C
+    BUILD_COMMAND      	make
+    UPDATE_COMMAND      ""
+)
+
+set(manyears_C_PREFIX
+    ${CMAKE_CURRENT_BINARY_DIR}/manyearslib-prefix/src/manyearslib/manyears-C)
+
+add_dependencies(manyears_C		manyearslib)
+
+
 
 ################################################
 ## Declare ROS messages, services and actions ##
@@ -107,7 +127,7 @@ catkin_package(
 include_directories(
   ${PROJECT_SOURCE_DIR}/include
   ${catkin_INCLUDE_DIRS}
-  ${manyearslib_PREFIX}/dsplib
+  ${manyears_C_PREFIX}/dsplib
 )
 
 ## Declare a cpp library
@@ -137,10 +157,10 @@ add_dependencies(position_exploitation manyears_msgs_generate_messages_cpp)
 
 ## Specify libraries to link a library or executable target against
 add_dependencies(manyears_node
-  manyearslib # Making sure the external project is built first. 
+  manyears_C # Making sure the external project is built first. 
 )
 target_link_libraries(manyears_node
-  ${manyearslib_PREFIX}/bin/libmanyears.a # WARNING: This aussumes we're on Linux.
+  ${manyears_C_PREFIX}/bin/libmanyears.a # WARNING: This aussumes we're on Linux.
   ${catkin_LIBRARIES}
 )
 target_link_libraries(manyears_ros
